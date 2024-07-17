@@ -1,0 +1,67 @@
+
+### Shadow Alchemy
+
+For Pirate Software GameJam 15, 2024
+Theme: Shadows and Alchemy
+
+inspired by: that flash game and Fear and Hunger
+
+# Setting
+    generic dungeon
+    bright, snow, some nature
+    green summer
+    
+    gold
+
+goal:
+    get to the top of the tower to discover the secret alchemy
+
+gameplay:
+    crawl through the dungeon
+    when you die, you leave your shadow. get back to your corpse to claim your shadow and some of your loot
+    
+    
+
+# story:
+Legend says this was the home of a powerful Alchemist.
+
+The tower was one covered with gold, on every wall, making it attractive for adventurers.
+But I belive, there is only one way it would be possible to aquire that much gold.
+If you could make it.
+
+Also contains the way to eternal life, because everyone who dies in there, doesn't comepletely die.
+But turns into monsters.
+
+You delve deeper.
+There are three paths you can take.
+But it's too dark to see what's ahead.
+
+* Bind your soul. (respawn point)
+
+
+Trader
+* Buy something.
+    * Mercury Infused Blade
+    * Drink. -> Used to kill yourself and reset run. After 100 uses, changes you and unlocks secret.
+    * Amulet. Keep 10% of gold after death.
+    
+* Inquire. -> She takes a sip of her cup. It smells of sulphur. 
+
+
+End?
+The alchemist is still standing there, turned into a statue of gold, hold their life's work. A book of all their secrets.
+You now have the ability to turn shadows into gold, and gold into shadow.
+
+items/materials:
+    gold 
+    shadow -> ???
+    ruby of health    -> restore hp
+    mana sapphire -> restore mana
+    four clover emerald -> upgrade dodge change (luck?)
+    diamond -> upgrade attack 
+    mercury blade
+
+alchemy:
+    turn things into gold
+    cure disease
+    eternal life

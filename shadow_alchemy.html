@@ -1,0 +1,19 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8" />
+<title>Shadow Alchemy</title></head><body></body>
+<script src="../taptapir/taptapir.js"></script>
+<script type='text/sunsnake'>
+
+set_orientation('horizontal')
+dungeon_scene = Scene('black_bg')
+
+grid = Array_2d(5,5)
+for _y in range(5):
+    for _x in range(5):
+        let x = _x
+        let y = _y
+        let tile = Entity(parent=dungeon_scene, scale=.1, origin=[-.5,0], xy=[-.45 + x*.2,-.3 + y*.2], collor=color.white, shadow=1, roundness=.1, enabled=False, revealed=False)
+        grid[y][x] = tile
+
+Text(text=`Legend says this was the home of a powerful Alchemist.`, text_color=color.smoke, color=[0,0,0,.5], scale=[.75,.1], text_origin=[0,0], padding=[2,.0], roundness=.025)
+
+</script><script src="../taptapir/sunsnake_compiler.js"></script></html>

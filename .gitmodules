@@ -1,0 +1,3 @@
+[submodule "taptapir"]
+	path = taptapir
+	url = https://github.com/pokepetter/taptapir.git
