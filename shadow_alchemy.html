@@ -7,15 +7,113 @@ set_orientation('horizontal')
 set_background_color('black')
 set_window_color('black')
 
-dungeon_scene = Scene('black_bg')
+
+narrator = Entity(visble_self=False, i=0, narrating=False)
+self = narrator
+self.text_box = Text(text='', text_color=color.dark_gray, color=[0,0,0,0], scale=[.75,.1], text_origin=[0,.5], padding=[2,.0], roundness=.025, enabled=False)
+self.text_box_new = Text(text='', text_color=color.smoke, color=[0,0,0,0], scale=[.75,.1], text_origin=[0,.5], padding=[2,.0], roundness=.025, enabled=False)
+self.text_bg = Entity(parent=narrator, scale=[1.5, .4], color=color.black, alpha=.9, roundness=.1, y=-.054, z=-1, shadow=True)
+set_scale(.8)
+self.input = def input(key):
+    if not self.narrating:
+        return 
+    keys = ['space', 'left mouse down']
+    if key in keys:
+        self.next()
+
+self.narrate = def narrate(text, on_end=None):
+    # print('narrate', text, on_end)
+    self.lines = [l for l in text.split('\n') if l]
+    self.i = 0
+    self.line_index = 0
+    self.text_box.text = ''
+    self.text_box_new.text = ''
+    self.text_box.enabled = True
+    self.text_box_new.enabled = True
+    self.narrating = True
+    self.on_end = on_end
+    self.next()
+
+self.next = def next():
+    if self.i >= len(self.lines):
+        self.end()
+        return
+
+    if self.lines[self.i] == '---':
+        self.text_box.text = ''
+        self.text_box_new.text = ''
+        self.line_index = 0
+        self.i += 1
+        self.next()
+        return
+
+    self.text_box_new.text = ''
+    for _ in range(self.line_index):
+        self.text_box_new.text += '\n\n'
+
+    self.text_box_new.text += self.lines[self.i]
+    if self.line_index > 0:
+        self.text_box.text += self.lines[self.i-1] + '\n\n'
+
+    self.i += 1
+    self.line_index += 1
+
+
+self.end = def end():
+    self.text_box.enabled = False
+    self.text_box_new.enabled = False
+    self.text_bg.enabled = False
+    self.narrating = False
+    print('on end event:', self.on_end)
+    if self.on_end:
+        self.on_end()
+
+
+intro_story = `
+Legend says this was the home of a powerful Alchemist.
+---
+The tower was once covered with gold, on every wall, making it attractive for adventurers.
+But I belive, there is only one way it would be possible to aquire that much gold.
+If you could make it.
+`
+
+main_menu = Scene(name='main_menu', texture='alchemists_tower')
+main_menu.on_enter = def():
+    camera.overlay.alpha = 1
+    camera.overlay.animate('alpha', 0, 2)
+    start_button.enabled = False
+    start_button.scale = .05
+    # start_button.text_alpha = 0
+    after .5:
+        start_button.enabled = True
+        start_button.animate('scale_x', .3, .2)
+        after .2:
+            start_button.animate('scale_y', .1, .2)
+            # start_button.animate('text_alpha', .9, .5)
+
+start_button = Button(parent=main_menu, scale=[.3,.1], color=color.black, alpha=.9, text='Play', text_color=color.orange, y=-.2,shadow=True, on_click=def():goto_scene('intro'))
+start_button.input = def input(key):
+    if key == 'enter' and main_menu.enabled:
+        start_button.on_click()
+
+title = Button(parent=main_menu, text='Shadow Alchemy', z=-1, y=.2, color=color.clear, text_size=15, text_color=color.violet,)
+# Entity(parent=main_menu, scale=2, color=color.black, alpha=.7)
+
+intro = Scene(name='intro', texture='black_bg_anim.gif')
+intro.on_enter = def(): 
+    narrator.narrate(intro_story, function(){goto_scene('dungeon')})
+
+
+dungeon = Scene(name='dungeon', texture='black_bg', )
 grid = Array_2d(5,5)
 for _y in range(5):
     for _x in range(5):
         let x = _x
         let y = _y
-        let tile = Entity(parent=dungeon_scene, scale=.1, origin=[-.5,0], xy=[-.45 + x*.2,-.3 + y*.2], collor=color.white, shadow=1, roundness=.1, enabled=False, revealed=False)
+        let tile = Entity(parent=dungeon, scale=.2, origin=[-.5,0], xy=[-.45 + x*.2, -.4 + y*.2], color=hsv(0,0,.05+(random_value()*.01)), shadow=1, roundness=.1, enabled=True, revealed=False)
         grid[y][x] = tile
 
-Text(text=`Legend says this was the home of a powerful Alchemist.`, text_color=color.smoke, color=[0,0,0,.5], scale=[.75,.1], text_origin=[0,0], padding=[2,.0], roundness=.025)
 
+# goto_scene(main_menu, False)
+goto_scene(dungeon, False)
 </script><script src="taptapir/sunsnake_compiler.js"></script></html>
