@@ -4,25 +4,48 @@
 For Pirate Software GameJam 15, 2024
 Theme: Shadows and Alchemy
 
-inspired by: that flash game and Fear and Hunger
+# Inspiration 
+Fear and Hunger meets Enchanted Cave.
 
-# Setting
-    generic dungeon
-    bright, snow, some nature
-    green summer
-    
-    gold
 
-goal:
-    get to the top of the tower to discover the secret alchemy
+## Gameplay
 
-gameplay:
-    crawl through the dungeon
-    when you die, you leave your shadow. get back to your corpse to claim your shadow and some of your loot
-    
-    
+# Goal
+Get to the top of the tower to discover the secret alchemy.
 
-# story:
+# Gameplay Features
+Explore each floor and find the exit.
+Sometimes there are locked doors you need to find keys for.
+You can find common loot in barrels, and rare loot in chests.
+Sometimes there are monsters blocking the path. Can also drop loot.
+When you die, you leave your shadow. Get back to your corpse to claim your shadow and some of your loot
+
+
+## Items/Materials:
+• gold 
+• shadow -> ???
+
+• ruby of health -> restore hp
+• diamond -> upgrade attack 
+• sapphire -> increase defence
+• four clover emerald -> upgrade dodge change (luck?)
+
+• mercury blade
+
+
+## Visuals
+Top down Perspective.
+Tile based.
+Generally dark and broody mood.
+
+# Biomes
+* Basement with stone floor.
+* Nicer Tiles.
+* Snow + some nature.
+* Green summer.
+
+
+## Story
 Legend says this was the home of a powerful Alchemist.
 
 The tower was one covered with gold, on every wall, making it attractive for adventurers.
@@ -52,16 +75,33 @@ End?
 The alchemist is still standing there, turned into a statue of gold, hold their life's work. A book of all their secrets.
 You now have the ability to turn shadows into gold, and gold into shadow.
 
-items/materials:
-    gold 
-    shadow -> ???
-    ruby of health    -> restore hp
-    mana sapphire -> restore mana
-    four clover emerald -> upgrade dodge change (luck?)
-    diamond -> upgrade attack 
-    mercury blade
+
 
 alchemy:
     turn things into gold
     cure disease
     eternal life
+
+
+## Technology
+Since this has to be able to be run in a browsers, I'm using Taptapir for this:
+https://pokepetter.github.io/taptapir/docs/index.html
+I exptect to have to make changes to these libraries as I make this game.
+
+## Schedule
+
+17 WED: Started brainstroming ideas and writing desing doc.
+18 THU: Made graphics for the tower establishing shot and background animation for the narration scene.
+19 FRI: Added basic Level loading and grid based movement movement. Added import support to sunsnake and split code into multiple files.
+20 SAT: Refine design doc. Add basic functionality for exit, loot and monster tiles.
+21 SUN: Add player stats and inventory.
+22 MON: Add more levels.
+23 TUE: Finish basic gameplay loop where you can fight, die and respawn.
+
+24 THU: Make graphics for environment, player and an enemy.
+25 WED: Add basic shop. Draw item graphics.
+26 SAT: Make music and sound effects.
+27 SUN:
+28 MON:
+29 TUE:
+30 WED:

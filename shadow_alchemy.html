@@ -90,22 +90,47 @@ def goto_level(level_index):
 
             if char in ['.','@','E','b','m']:
                 tint = hsv(h+random_int(0,10)*variation[0], s+random_int(0,10)*variation[1], v+random_int(0,10)*variation[2])
-                TILES.set(x, y, Entity(parent=tile_parent, scale=1, xy=[x,y], z=-1, color=tint, shadow=1, roundness=.015, scale=1.1, tile_type='a', ignore_collision=False, rotation=random_int(-10,10)*.1, walkable=True, tile_type=tile_type, text=tile_type, text_origin=[0,0], text_color=color.dark_gray, alpha=0))
+                tile = Entity(parent=tile_parent, scale=1, xy=[x,y], z=-1, color=tint, shadow=1, roundness=.015, scale=1.1, tile_type='a', ignore_collision=False, rotation=random_int(-10,10)*.1, walkable=True, tile_type=tile_type, text=tile_type, text_origin=[0,0], text_color=color.dark_gray, alpha=0, roundness=.5, scale=0, content=None)
+                TILES.set(x, y, tile) 
                 
             elif char == '█' and (y > 0 and lines[y-1][x] != '█'):
                 tint = hsv(210+random_int(0,10)*variation[0], .4+random_int(0,10)*variation[1], .05)
-                TILES.set(x, y, Entity(parent=tile_parent, scale=1, xy=[x,y], z=-1, color=tint, shadow=1, roundness=.015, scale=1.1, tile_type='a', ignore_collision=False, rotation=random_int(-10,10)*.1, alpha=0))
+                TILES.set(x, y, Entity(parent=tile_parent, scale=1, xy=[x,y], z=-1, color=tint, shadow=1, roundness=.015, scale=1.1, tile_type='a', ignore_collision=False, rotation=random_int(-10,10)*.1, alpha=0, content=None))
                 
             
             if char == '@':
                 print('move player to:', x, y)
-                target_tile = TILES.get(x, y)
-                if target_tile:
-                    player.goto_tile(target_tile)
+                if tile:
+                    player.goto_tile(tile)
                     camera.xy = player.xy
                 
             elif char == 'E':
-                char = '.'
+                tile.walkable = False
+                tile.on_interact = def go_to_next_level():
+                    goto_level(level_index+1)
+
+            elif char == 'b':
+                tile.content = Entity(parent=tile, scale=[.7,.9], color=hsv(20,.5,.3), alpha=0, z=-1)
+                tile.walkable = False
+                tile.on_interact = def loot_barrel():
+                    print('get loot')
+
+             elif char == 'm':
+                tile.content = Entity(parent=tile, scale=[.7,.9], color=hsv(0,.5,.6), alpha=0, z=-1)
+                tile.walkable = False
+                enemy = tile.content
+                enemy.hp = 3
+                tile.on_interact = def attack():
+                    print('attack')
+                    enemy.hp -= 1
+                    if enemy <= 0:
+                        destroy(enemy)
+                        tile.content = None
+                    enemy.alpha = 0
+                    enemy.animate('alpha', 1, .1)
+                    
+
+
 
     # camera.overlay.animate('alpha', 1, .2)
     # after .3s:
