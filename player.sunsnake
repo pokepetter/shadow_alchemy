@@ -1,0 +1,53 @@
+player = Entity(parent=dungeon, color=color.black, visible_self=0)
+player.graphics = Entity(parent=dungeon, z=-1, scale=[.5,.8], color=color.orange)
+player.update = def update():
+    player.graphics.x = lerp(player.graphics.x, player.x, 1/60*5)
+    player.graphics.y = lerp(player.graphics.y, player.y, 1/60*5)
+    camera.x = lerp(camera.x, player.graphics.x, 1/60)
+    camera.y = lerp(camera.y, player.graphics.y, 1/60)
+    camera.x = clamp(camera.x, 1, LEVEL_SIZE[0]-1)
+    camera.y = clamp(camera.y, 1.5, LEVEL_SIZE[1]-2)
+
+player.input = def input(key):
+    if key == 'd':
+        player.move([1,0])
+    if key == 'a':
+        player.move([-1,0])
+    if key == 'w':
+        player.move([0,1])
+    if key == 's':
+        player.move([0,-1])
+
+    if key == 'left mouse down' and mouse.hovered_entity in TILES.flatten():
+        target_tile = mouse.hovered_entity
+        if abs(target_tile.x - player.x) + abs(target_tile.y - player.y) == 1:
+            player.goto_tile(target_tile)
+
+player.move = def move(direction):
+    # print('current player pos:', int(player.x), int(player.y), 'walk in direction:', direction, 'new pos:', int(player.x)+direction[0], int(player.y)+direction[1])
+    let next_tile = TILES.get(int(player.x)+direction[0], int(player.y)+direction[1])
+    if not next_tile or not next_tile.walkable:
+        return
+    if next_tile:
+        player.goto_tile(next_tile)
+
+player.goto_tile = def goto_tile(next_tile):
+    # print('goto tile;', next_tile)
+    #  if we move fast, snap graphics to current target position to prevent diagonal movement and such 
+    if player.graphics.x != player.x:
+        player.graphics.x = player.x
+    if player.graphics.y != player.y:
+        player.graphics.y = player.y
+    player.xy = next_tile.xy
+
+    neighbors = [[0,0], [0,1], [1,0], [0,-1], [-1,0],  [1,1],[1,-1],[-1,-1],[-1,1]]
+    for neighbor in neighbors:
+        target_tile = TILES.get(int(next_tile.x)+neighbor[0], int(next_tile.y)+neighbor[1])
+        if target_tile:
+            target_tile.animate('alpha', 1, .5)
+
+    neighbors = [[0,2], [2,0], [0,-2], [-2,0]]
+    for neighbor in neighbors:
+        target_tile = TILES.get(int(next_tile.x)+neighbor[0], int(next_tile.y)+neighbor[1])
+        if target_tile and target_tile.alpha < .2:
+            target_tile.animate('alpha', .5, .5)

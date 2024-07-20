@@ -1,0 +1,64 @@
+narrator = Entity(parent=camera.ui, visible_self=False, )
+i = 0
+narrating = False
+# self = narrator
+text_box_history = Text(parent=narrator, text='', text_color=color.dark_gray, color=[0,0,0,0], scale=[.75,.1], text_origin=[0,.5], padding=[2,.0], roundness=.025, y=-.2, enabled=False)
+text_box_current = Text(parent=narrator, text='', text_color=color.smoke, color=[0,0,0,0], scale=[.75,.1], text_origin=[0,.5], padding=[2,.0], roundness=.025, y=-.2, enabled=False)
+text_bg = Entity(parent=narrator, scale=[1.5, .4], color=color.black, alpha=.9, roundness=.1, y=-.254, shadow=True, enabled=False)
+
+narrator.input = def input(key):
+    if not narrating:
+        return 
+    keys = ['space', 'left mouse down']
+    if key in keys:
+        narrator.next()
+
+narrator.narrate = def narrate(text, on_end=None):
+    # print('narrate', text, on_end)
+    lines = [l for l in text.split('\n') if l]
+    i = 0
+    line_index = 0
+    text_box_history.text = ''
+    text_box_current.text = ''
+    text_box_history.enabled = True
+    text_box_current.enabled = True
+    text_bg.enabled = True
+    narrating = True
+    narrator.on_end = on_end
+    narrator.next()
+
+narrator.next = def next():
+    if i >= len(lines):
+        narrator.end()
+        return
+
+    if lines[i] == '---':
+        text_box_history.text = ''
+        text_box_current.text = ''
+        line_index = 0
+        i += 1
+        narrator.next()
+        return
+
+    text_box_current.text = ''
+    for _ in range(line_index):
+        text_box_current.text += '\n\n'
+
+    text_box_current.text += lines[i]
+    if line_index > 0:
+        text_box_history.text += lines[i-1] + '\n\n'
+
+    i += 1
+    line_index += 1
+
+
+narrator.end = def end():
+    text_box_history.enabled = False
+    text_box_current.enabled = False
+    text_bg.enabled = False
+    narrating = False
+    print('on end event:', narrator.on_end)
+    if narrator.on_end:
+        narrator.on_end()
+
+print('IMOPRTED NARRATOR')

@@ -3,71 +3,14 @@
 <script src="taptapir/taptapir.js"></script>
 <script type='text/sunsnake'>
 
+
 set_orientation('horizontal')
-set_background_color('black')
+set_background_color('#111')
 set_window_color('black')
 
-
-narrator = Entity(visble_self=False, i=0, narrating=False)
-self = narrator
-self.text_box = Text(text='', text_color=color.dark_gray, color=[0,0,0,0], scale=[.75,.1], text_origin=[0,.5], padding=[2,.0], roundness=.025, enabled=False)
-self.text_box_new = Text(text='', text_color=color.smoke, color=[0,0,0,0], scale=[.75,.1], text_origin=[0,.5], padding=[2,.0], roundness=.025, enabled=False)
-self.text_bg = Entity(parent=narrator, scale=[1.5, .4], color=color.black, alpha=.9, roundness=.1, y=-.054, z=-1, shadow=True)
-set_scale(.8)
-self.input = def input(key):
-    if not self.narrating:
-        return 
-    keys = ['space', 'left mouse down']
-    if key in keys:
-        self.next()
-
-self.narrate = def narrate(text, on_end=None):
-    # print('narrate', text, on_end)
-    self.lines = [l for l in text.split('\n') if l]
-    self.i = 0
-    self.line_index = 0
-    self.text_box.text = ''
-    self.text_box_new.text = ''
-    self.text_box.enabled = True
-    self.text_box_new.enabled = True
-    self.narrating = True
-    self.on_end = on_end
-    self.next()
-
-self.next = def next():
-    if self.i >= len(self.lines):
-        self.end()
-        return
-
-    if self.lines[self.i] == '---':
-        self.text_box.text = ''
-        self.text_box_new.text = ''
-        self.line_index = 0
-        self.i += 1
-        self.next()
-        return
-
-    self.text_box_new.text = ''
-    for _ in range(self.line_index):
-        self.text_box_new.text += '\n\n'
-
-    self.text_box_new.text += self.lines[self.i]
-    if self.line_index > 0:
-        self.text_box.text += self.lines[self.i-1] + '\n\n'
-
-    self.i += 1
-    self.line_index += 1
-
-
-self.end = def end():
-    self.text_box.enabled = False
-    self.text_box_new.enabled = False
-    self.text_bg.enabled = False
-    self.narrating = False
-    print('on end event:', self.on_end)
-    if self.on_end:
-        self.on_end()
-
+import narrator
+import player
+import levels
 
 intro_story = `
 Legend says this was the home of a powerful Alchemist.
@@ -77,7 +20,7 @@ But I belive, there is only one way it would be possible to aquire that much gol
 If you could make it.
 `
 
-main_menu = Scene(name='main_menu', texture='alchemists_tower')
+main_menu = Scene(parent=camera.ui, name='main_menu', texture='alchemists_tower')
 main_menu.on_enter = def():
     camera.overlay.alpha = 1
     camera.overlay.animate('alpha', 0, 2)
@@ -92,28 +35,103 @@ main_menu.on_enter = def():
             # start_button.animate('text_alpha', .9, .5)
 
 start_button = Button(parent=main_menu, scale=[.3,.1], color=color.black, alpha=.9, text='Play', text_color=color.orange, y=-.2,shadow=True, on_click=def():goto_scene('intro'))
-start_button.input = def input(key):
-    if key == 'enter' and main_menu.enabled:
+main_menu.input = def input(key):
+    if key == 'enter':
         start_button.on_click()
 
 title = Button(parent=main_menu, text='Shadow Alchemy', z=-1, y=.2, color=color.clear, text_size=15, text_color=color.violet,)
 # Entity(parent=main_menu, scale=2, color=color.black, alpha=.7)
 
-intro = Scene(name='intro', texture='black_bg_anim.gif')
-intro.on_enter = def(): 
-    narrator.narrate(intro_story, function(){goto_scene('dungeon')})
+intro = Scene(parent=camera.ui, name='intro', texture='alchemists_tower')
+enter_dungeon_button = Button(parent=intro, scale=[.3,.1], color=color.black, alpha=.9, text='Enter Tower', text_color=color.azure, y=-.2,shadow=True, enabled=False, on_click=def():goto_scene('dungeon'))
+intro.on_enter = def():
+    def enter_dungeon():
+        enter_dungeon_button.enabled = True
+    narrator.narrate(intro_story, on_click=enter_dungeon)
+intro.on_exit = def():
+    # narrator.end()
+    enter_dungeon_button.enabled = False
 
 
-dungeon = Scene(name='dungeon', texture='black_bg', )
-grid = Array_2d(5,5)
-for _y in range(5):
-    for _x in range(5):
-        let x = _x
-        let y = _y
-        let tile = Entity(parent=dungeon, scale=.2, origin=[-.5,0], xy=[-.45 + x*.2, -.4 + y*.2], color=hsv(0,0,.05+(random_value()*.01)), shadow=1, roundness=.1, enabled=True, revealed=False)
-        grid[y][x] = tile
+dungeon = Scene(name='dungeon')
+dungeon.bg = Entity(parent=dungeon, texture='black_bg.gif', scale=[.16,.9], z=1)
+dungeon.on_enable = def():
+    print('go to dungeon')
+    goto_level(0)
+    camera.fov = 12
+LEVEL_SIZE = [16,16]
+TILES = Array2D(LEVEL_SIZE[0], LEVEL_SIZE[1])
+h=0
+s=0
+v=.15
+variation = [0,0,.002]
+tile_parent = Entity(parent=dungeon, visible_self=False)
 
 
-# goto_scene(main_menu, False)
-goto_scene(dungeon, False)
-</script><script src="taptapir/sunsnake_compiler.js"></script></html>
+def goto_level(level_index):
+    print('gotolevel:', levels[level_index])
+    destroy(tile_parent)
+    tile_parent = Entity(parent=dungeon, visible_self=False)
+    # print(levels[level_index])
+    # print('trimmed:', levels[level_index].trim())
+    let lines = levels[level_index].trim().split('\n').reverse()
+    # print('lines', lines)
+    LEVEL_SIZE[1] = len(lines)
+    LEVEL_SIZE[0] = len(lines[0])
+    # level_grid = []
+    TILES = Array2D(LEVEL_SIZE[0], LEVEL_SIZE[1])
+    print('----- width', TILES.width)
+
+    for y, line in lines:
+        for x, char in line.split(''):
+            tile_type = char
+            # print(x,y, char)
+ 
+
+            if char in ['.','@','E','b','m']:
+                tint = hsv(h+random_int(0,10)*variation[0], s+random_int(0,10)*variation[1], v+random_int(0,10)*variation[2])
+                TILES.set(x, y, Entity(parent=tile_parent, scale=1, xy=[x,y], z=-1, color=tint, shadow=1, roundness=.015, scale=1.1, tile_type='a', ignore_collision=False, rotation=random_int(-10,10)*.1, walkable=True, tile_type=tile_type, text=tile_type, text_origin=[0,0], text_color=color.dark_gray, alpha=0))
+                
+            elif char == '█' and (y > 0 and lines[y-1][x] != '█'):
+                tint = hsv(210+random_int(0,10)*variation[0], .4+random_int(0,10)*variation[1], .05)
+                TILES.set(x, y, Entity(parent=tile_parent, scale=1, xy=[x,y], z=-1, color=tint, shadow=1, roundness=.015, scale=1.1, tile_type='a', ignore_collision=False, rotation=random_int(-10,10)*.1, alpha=0))
+                
+            
+            if char == '@':
+                print('move player to:', x, y)
+                target_tile = TILES.get(x, y)
+                if target_tile:
+                    player.goto_tile(target_tile)
+                    camera.xy = player.xy
+                
+            elif char == 'E':
+                char = '.'
+
+    # camera.overlay.animate('alpha', 1, .2)
+    # after .3s:
+    #     camera.overlay.animate('alpha', 0, .2)
+
+    #     current_level = levels[i]
+    #     print('------------goto-', current_level)
+    #     for y in range(level_size[0]):
+    #         for x in range(level_size[1]):
+    #             if current_level[x][y] == 0:
+    #                 TILES[x][y].enabled = False
+    #             else:
+    #                 TILES[x][y].enabled = True
+
+
+cheats = Entity(visible_self=False)
+cheats.input = def cheat_input(key):
+    if int(key) in [0,1,2,3,4,5,6,7,8,9]:
+        # print(key)
+        scene_name = Object.keys(scene_handler.states)[int(key)]
+        # print('cheat: goto_scene:', scene_name)
+        goto_scene(scene_name)
+        # print('---------', test_level)
+
+# goto_scene(dungeon, False)
+goto_scene(main_menu, False)
+
+</script>
+<script src="taptapir/sunsnake_compiler.js"></script></html>
