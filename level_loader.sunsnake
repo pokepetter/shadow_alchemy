@@ -1,0 +1,117 @@
+# import player
+
+dungeon = Scene(name='dungeon')
+dungeon.bg = Entity(parent=dungeon, texture='black_bg.gif', scale=[.16,.9], z=1)
+dungeon.on_enter = def():
+    print('go to dungeon')
+    goto_level(0)
+    camera.fov = 12
+LEVEL_SIZE = [16,16]
+TILES = Array2D(LEVEL_SIZE[0], LEVEL_SIZE[1])
+h=0
+s=0
+v=.15
+variation = [0,0,.002]
+tile_parent = Entity(parent=dungeon, visible_self=False)
+
+
+def goto_level(level_index):
+    print('gotolevel:', levels[level_index])
+    destroy(tile_parent)
+    tile_parent = Entity(parent=dungeon, visible_self=False)
+    # print(levels[level_index])
+    # print('trimmed:', levels[level_index].trim())
+    let lines = levels[level_index].trim().split('\n').reverse()
+    # print('lines', lines)
+    LEVEL_SIZE[1] = len(lines)
+    LEVEL_SIZE[0] = len(lines[0])
+    # level_grid = []
+    TILES = Array2D(LEVEL_SIZE[0], LEVEL_SIZE[1])
+    print('----- width', TILES.width)
+
+    for y, line in lines:
+        for x, char in line.split(''):
+            tile_type = char
+            # print(x,y, char)
+ 
+
+            if char in ['.','@','E','b','m']:
+                tint = hsv(h+random_int(0,10)*variation[0], s+random_int(0,10)*variation[1], v+random_int(0,10)*variation[2])
+                tile = Entity(parent=tile_parent, scale=1, xy=[x,y], z=-1, color=tint, shadow=1, roundness=.015, scale=1.1, tile_type='a', ignore_collision=False, rotation=random_int(-10,10)*.1, walkable=True, tile_type=tile_type, text=tile_type, text_origin=[0,0], text_color=color.dark_gray, alpha=0, roundness=.5, scale=0, content=None)
+                TILES.set(x, y, tile) 
+                
+            elif char == '█' and (y > 0 and lines[y-1][x] != '█'):
+                tint = hsv(210+random_int(0,10)*variation[0], .4+random_int(0,10)*variation[1], .05)
+                TILES.set(x, y, Entity(parent=tile_parent, scale=1, xy=[x,y], z=-1, color=tint, shadow=1, roundness=.015, scale=1.1, tile_type='a', ignore_collision=False, rotation=random_int(-10,10)*.1, alpha=0, content=None))
+                
+            
+            if char == '@':
+                print('move PLAYER to:', x, y)
+                PLAYER.xy = tile.xy
+                camera.xy = PLAYER.xy
+                
+            elif char == 'E':
+                tile.walkable = False
+                tile.content = Door(tile=tile, level_index=level_index)
+
+            elif char == 'b':
+                tile.content = Barrel(tile=tile)
+                tile.walkable = False
+
+             elif char == 'm':
+                tile.content = Enemy(tile=tile, enemy_type='shadow_blob')
+                tile.walkable = False
+
+    PLAYER.goto_tile(TILES.get(PLAYER.x, PLAYER.y))
+
+
+class Door extends Entity:
+    constructor(settings):
+        tile = settings['tile']
+        super({parent:tile, color:hsv(20,.5,1), alpha:0, z:-1, text:'E'})
+        this.level_index = settings['level_index']
+
+    on_interact():
+        goto_level(this.level_index+1)
+
+
+class Barrel extends Entity:
+    constructor(settings):
+        tile = settings['tile']
+        super({parent:tile, scale:[.7,.9], color:hsv(20,.5,.3), alpha:0, z:-1, text:'barrel'})
+        this.looted = False
+
+    on_interact():
+        if not this.looted:
+            print('loot barrel')
+            this.text = ''
+        else:
+            print('already looted')
+            return
+
+class Enemy extends Entity:
+    constructor(settings):
+        tile = settings['tile']
+        let enemy_type = settings['enemy_type']
+        # super(dict(scale=[.7,.9], color=hsv(20,.5,.3), alpha=0, z=-1))
+        super({parent:tile, scale:[.7,.9], color:hsv(0,.9,.8), alpha:0, z:-1, text:enemy_type})
+        this.tile = tile
+        this.hp = 3
+        this.attack = 1
+
+    die():
+        print('die')
+        destroy(this)
+        this.tile.walkable = True
+
+    on_interact():
+        print('interact')
+        PLAYER.hp -= this.attack
+        this.hp -= 1
+        if this.hp > 0:
+            print('enemy hp:', this.hp, '->', this.hp-1)
+            this.alpha = 0
+            this.animate('alpha', 1, .1)
+        else:
+            this.die()
+        
