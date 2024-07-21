@@ -1,77 +1,99 @@
-PLAYER = Entity(color=color.black, visible_self=0)
-PLAYER.graphics = Entity(z=-1, scale=[.5,.8], color=color.black)
-PLAYER.update = def update():
-    PLAYER.graphics.x = lerp(PLAYER.graphics.x, PLAYER.x, 1/60*5)
-    PLAYER.graphics.y = lerp(PLAYER.graphics.y, PLAYER.y, 1/60*5)
-    camera.x = lerp(camera.x, PLAYER.graphics.x, 1/60)
-    camera.y = lerp(camera.y, PLAYER.graphics.y, 1/60)
-    camera.x = clamp(camera.x, 1, LEVEL_SIZE[0]-1)
-    camera.y = clamp(camera.y, 1.5, LEVEL_SIZE[1]-2)
+# self = Entity(color=color.black, visible_self=0)
 
-PLAYER.max_hp = 10
-PLAYER.hp = PLAYER.max_hp
-PLAYER.gold = 0
-PLAYER.gold
-PLAYER.spawn_point = 0 
-
-# PLAYER.respawn = def respawn():
-#     save_system.load()
-PLAYER.health_bar = HealthBar(max=10, scale=[4,.5], bar_color=color.red)
-
-
-PLAYER.input = def input(key):
-    if key == 'd':
-        PLAYER.move([1,0])
-    if key == 'a':
-        PLAYER.move([-1,0])
-    if key == 'w':
-        PLAYER.move([0,1])
-    if key == 's':
-        PLAYER.move([0,-1])
-
-    if key == 'left mouse down' and mouse.hovered_entity in TILES.flatten():
-        target_tile = mouse.hovered_entity
-        if abs(target_tile.x - PLAYER.x) + abs(target_tile.y - PLAYER.y) == 1:
-            PLAYER.goto_tile(target_tile)
-
-PLAYER.move = def move(direction):
-    # print('current PLAYER pos:', int(PLAYER.x), int(PLAYER.y), 'walk in direction:', direction, 'new pos:', int(PLAYER.x)+direction[0], int(PLAYER.y)+direction[1])
-    let next_tile = TILES.get(int(PLAYER.x)+direction[0], int(PLAYER.y)+direction[1])
-    if next_tile and next_tile.walkable:
-        PLAYER.goto_tile(next_tile)
-
-    if next_tile.content and next_tile.content.on_interact:
-        next_tile.content.on_interact()
+class Player extends Entity:
+    constructor(settings):
+        let graphics = Entity(z=-1, scale=[.5,.8], color=color.black)
+        super({color:color.black, visible_self:False})
+        self.graphics = graphics
+        # self.gold = 0
+        # self.spawn_point = 0 
+        self.health_bar = HealthBar(parent=camera.ui, max=10, bar_color=color.red, xy=[-.65,.45], scale=[.4,.04])
+        self.max_hp = 10
+        self.hp = self.max_hp
+    
+    update():
+        self.graphics.x = lerp(self.graphics.x, self.x, 1/60*5)
+        self.graphics.y = lerp(self.graphics.y, self.y, 1/60*5)
+        camera.x = lerp(camera.x, self.graphics.x, 1/60)
+        camera.y = lerp(camera.y, self.graphics.y, 1/60)
+        camera.x = clamp(camera.x, 1, LEVEL_SIZE[0]-1)
+        camera.y = clamp(camera.y, 1.5, LEVEL_SIZE[1]-2)
 
 
-PLAYER.goto_tile = def goto_tile(next_tile):
-    # print('goto tile;', next_tile)
-    #  if we move fast, snap graphics to current target position to prevent diagonal movement and such 
-    if PLAYER.graphics.x != PLAYER.x:
-        PLAYER.graphics.x = PLAYER.x
-    if PLAYER.graphics.y != PLAYER.y:
-        PLAYER.graphics.y = PLAYER.y
-    PLAYER.xy = next_tile.xy
+    get hp():
+        return self._hp
+    set hp(value):
+        self._hp = value
+        if value <= 0:
+            self.respawn()
+            return
+        print('set player hp to:', value)
+        self.health_bar.value = value
 
-    neighbors = [[0,0], [0,1], [1,0], [0,-1], [-1,0],  [1,1],[1,-1],[-1,-1],[-1,1]]
-    for neighbor in neighbors:
-        target_tile = TILES.get(int(next_tile.x)+neighbor[0], int(next_tile.y)+neighbor[1])
-        if target_tile:
-            target_tile.animate('roundness', .05, .5)
-            target_tile.animate('scale', 1, .05)
-            target_tile.animate('alpha', 1, .5)
-            target_tile.text = ''
-            if target_tile.content:
-                target_tile.content.animate('alpha', 1, .5)
+    respawn():
+        print('respawn')
+        self.hp = self.max_hp
+        goto_level(0)
+        
 
-    neighbors = [[0,2], [2,0], [0,-2], [-2,0],  [1,2],[2,1],[2,-1],[1,-2],[-1,-2],[-2,-1],[-2,1],[-1,2]]
-    for neighbor in neighbors:
-        target_tile = TILES.get(int(next_tile.x)+neighbor[0], int(next_tile.y)+neighbor[1])
-        if target_tile and target_tile.alpha < .2:
-            target_tile.animate('alpha', .25, .5)
-            target_tile.animate('roundness', .2, .5)
-            target_tile.animate('scale', .8, .05)
-            target_tile.text = '?'
+    input(key):
+        if key == 'd':
+            self.move([1,0])
+        if key == 'a':
+            self.move([-1,0])
+        if key == 'w':
+            self.move([0,1])
+        if key == 's':
+            self.move([0,-1])
+
+        if key == 'left mouse down' and mouse.hovered_entity in TILES.flatten():
+            target_tile = mouse.hovered_entity
+            if abs(target_tile.x - self.x) + abs(target_tile.y - self.y) == 1:
+                self.goto_tile(target_tile)
+
+    move(direction):
+        # print('current self pos:', int(self.x), int(self.y), 'walk in direction:', direction, 'new pos:', int(self.x)+direction[0], int(self.y)+direction[1])
+        let next_tile = TILES.get(int(self.x)+direction[0], int(self.y)+direction[1])
+        if next_tile and next_tile.walkable:
+            self.goto_tile(next_tile)
+
+        if next_tile.content and next_tile.content.on_interact:
+            next_tile.content.on_interact()
+
+    
+    goto_tile(next_tile):
+        # print('goto tile;', next_tile)
+        #  if we move fast, snap graphics to current target position to prevent diagonal movement and such 
+        if self.graphics.x != self.x:
+            self.graphics.x = self.x
+        if self.graphics.y != self.y:
+            self.graphics.y = self.y
+        self.xy = next_tile.xy
+
+        let neighbors = [[0,0], [0,1], [1,0], [0,-1], [-1,0],  [1,1],[1,-1],[-1,-1],[-1,1]]
+        for neighbor in neighbors:
+            let target_tile = TILES.get(int(next_tile.x)+neighbor[0], int(next_tile.y)+neighbor[1])
+            if target_tile:
+                target_tile.animate('roundness', .05, .5)
+                target_tile.animate('scale', 1, .05)
+                target_tile.animate('alpha', 1, .5)
+                target_tile.text = ''
+                if target_tile.content:
+                    target_tile.content.animate('alpha', 1, .5)
+
+        neighbors = [[0,2], [2,0], [0,-2], [-2,0],  [1,2],[2,1],[2,-1],[1,-2],[-1,-2],[-2,-1],[-2,1],[-1,2]]
+        for neighbor in neighbors:
+            let target_tile = TILES.get(int(next_tile.x)+neighbor[0], int(next_tile.y)+neighbor[1])
+            if target_tile and target_tile.alpha < .2:
+                target_tile.animate('alpha', .25, .5)
+                target_tile.animate('roundness', .2, .5)
+                target_tile.animate('scale', .8, .05)
+                target_tile.text = '?'
+
+    
+
+
+PLAYER = Player()
 
 #####
 #...#

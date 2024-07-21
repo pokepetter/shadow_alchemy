@@ -105,10 +105,13 @@ class Enemy extends Entity:
         this.tile.walkable = True
 
     on_interact():
-        print('interact')
-        PLAYER.hp -= this.attack
-        this.hp -= 1
+        print('interact', PLAYER.hp, this.attack)
         if this.hp > 0:
+            PLAYER.hp = PLAYER.hp - this.attack
+            this.hp -= 1
+            if this.hp <= 0:
+                this.die()
+                return
             print('enemy hp:', this.hp, '->', this.hp-1)
             this.alpha = 0
             this.animate('alpha', 1, .1)
