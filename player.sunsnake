@@ -26,14 +26,12 @@ player.input = def input(key):
 player.move = def move(direction):
     # print('current player pos:', int(player.x), int(player.y), 'walk in direction:', direction, 'new pos:', int(player.x)+direction[0], int(player.y)+direction[1])
     let next_tile = TILES.get(int(player.x)+direction[0], int(player.y)+direction[1])
-
-    if next_tile and next_tile.on_interact:
-        next_tile.on_interact()
-
-    if not next_tile or not next_tile.walkable:
-        return
-    if next_tile:
+    if next_tile and next_tile.walkable:
         player.goto_tile(next_tile)
+
+    if next_tile.content and next_tile.content.on_interact:
+        next_tile.content.on_interact()
+
 
 player.goto_tile = def goto_tile(next_tile):
     # print('goto tile;', next_tile)

@@ -100,50 +100,71 @@ def goto_level(level_index):
             
             if char == '@':
                 print('move player to:', x, y)
-                if tile:
-                    player.goto_tile(tile)
-                    camera.xy = player.xy
+                player.xy = tile.xy
+                camera.xy = player.xy
                 
             elif char == 'E':
                 tile.walkable = False
-                tile.on_interact = def go_to_next_level():
-                    goto_level(level_index+1)
+                tile.content = Door(tile=tile, level_index=level_index)
 
             elif char == 'b':
-                tile.content = Entity(parent=tile, scale=[.7,.9], color=hsv(20,.5,.3), alpha=0, z=-1)
+                tile.content = Barrel(tile=tile)
                 tile.walkable = False
-                tile.on_interact = def loot_barrel():
-                    print('get loot')
 
              elif char == 'm':
-                tile.content = Entity(parent=tile, scale=[.7,.9], color=hsv(0,.5,.6), alpha=0, z=-1)
+                tile.content = Enemy(tile=tile, enemy_type='shadow_blob')
                 tile.walkable = False
-                enemy = tile.content
-                enemy.hp = 3
-                tile.on_interact = def attack():
-                    print('attack')
-                    enemy.hp -= 1
-                    if enemy <= 0:
-                        destroy(enemy)
-                        tile.content = None
-                    enemy.alpha = 0
-                    enemy.animate('alpha', 1, .1)
-                    
+
+    player.goto_tile(TILES.get(player.x, player.y))
+
+class Door extends Entity:
+    constructor(settings):
+        tile = settings['tile']
+        super({parent:tile, color:hsv(20,.5,1), alpha:0, z:-1, text:'E'})
+        this.level_index = settings['level_index']
+
+    on_interact():
+        goto_level(this.level_index+1)
 
 
+class Barrel extends Entity:
+    constructor(settings):
+        tile = settings['tile']
+        super({parent:tile, scale:[.7,.9], color:hsv(20,.5,.3), alpha:0, z:-1, text:'barrel'})
+        this.looted = False
 
-    # camera.overlay.animate('alpha', 1, .2)
-    # after .3s:
-    #     camera.overlay.animate('alpha', 0, .2)
+    on_interact():
+        if not this.looted:
+            print('loot barrel')
+            this.text = ''
+        else:
+            print('already looted')
+            return
 
-    #     current_level = levels[i]
-    #     print('------------goto-', current_level)
-    #     for y in range(level_size[0]):
-    #         for x in range(level_size[1]):
-    #             if current_level[x][y] == 0:
-    #                 TILES[x][y].enabled = False
-    #             else:
-    #                 TILES[x][y].enabled = True
+class Enemy extends Entity:
+    constructor(settings):
+        tile = settings['tile']
+        let enemy_type = settings['enemy_type']
+        # super(dict(scale=[.7,.9], color=hsv(20,.5,.3), alpha=0, z=-1))
+        super({parent:tile, scale:[.7,.9], color:hsv(0,.9,.8), alpha:0, z:-1, text:enemy_type})
+        this.tile = tile
+        this.hp = 3
+
+    die():
+        print('die')
+        destroy(this)
+        this.tile.walkable = True
+
+    on_interact():
+        print('interact')
+        this.hp -= 1
+        if this.hp > 0:
+            print('enemy hp:', this.hp, '->', this.hp-1)
+            this.alpha = 0
+            this.animate('alpha', 1, .1)
+        else:
+            this.die()
+        
 
 
 cheats = Entity(visible_self=False)
