@@ -1,5 +1,3 @@
-# import player
-
 dungeon = Scene(name='dungeon')
 dungeon.bg = Entity(parent=dungeon, texture='black_bg.gif', scale=[.16,.9], z=1)
 dungeon.on_enter = def():

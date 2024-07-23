@@ -70,7 +70,7 @@ class Player extends Entity:
             self.graphics.y = self.y
         self.xy = next_tile.xy
 
-        let neighbors = [[0,0], [0,1], [1,0], [0,-1], [-1,0],  [1,1],[1,-1],[-1,-1],[-1,1]]
+        let neighbors = [[0,0], [0,1], [1,0], [0,-1], [-1,0],  [1,1],[1,-1],[-1,-1],[-1,1],  [0,2],[2,0],[0,-2],[-2,0]]
         for neighbor in neighbors:
             let target_tile = TILES.get(int(next_tile.x)+neighbor[0], int(next_tile.y)+neighbor[1])
             if target_tile:
@@ -81,22 +81,32 @@ class Player extends Entity:
                 if target_tile.content:
                     target_tile.content.animate('alpha', 1, .5)
 
-        neighbors = [[0,2], [2,0], [0,-2], [-2,0],  [1,2],[2,1],[2,-1],[1,-2],[-1,-2],[-2,-1],[-2,1],[-1,2]]
+        # neighbors = [[1,2],[2,1],[2,-1],[1,-2],[-1,-2],[-2,-1],[-2,1],[-1,2]]
+        neighbors = [[0,3],[1,2],[2,1],[3,0],[2,-1],[1,-2],[0,-3]]
         for neighbor in neighbors:
-            let target_tile = TILES.get(int(next_tile.x)+neighbor[0], int(next_tile.y)+neighbor[1])
-            if target_tile and target_tile.alpha < .2:
-                target_tile.animate('alpha', .25, .5)
-                target_tile.animate('roundness', .2, .5)
-                target_tile.animate('scale', .8, .05)
-                target_tile.text = '?'
-
-    
-
+            for flipped in [1,-1]:
+                let target_tile = TILES.get(int(next_tile.x)+(neighbor[0]*flipped), int(next_tile.y)+neighbor[1])
+                if target_tile and target_tile.alpha < .2:
+                    target_tile.animate('alpha', .25, .5)
+                    target_tile.animate('roundness', .2, .5)
+                    target_tile.animate('scale', .8, .05)
+                    target_tile.text = '?'
 
 PLAYER = Player()
+
+
+
 
 #####
 #...#
 #.A.#
 #...#
 #####
+
+   #
+  #.#
+ #...#
+#..A..#
+ #...#
+  #.#
+   #  

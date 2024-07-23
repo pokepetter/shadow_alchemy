@@ -16,6 +16,10 @@ import levels
 import level_loader
 import player
 
+# print('-----------------', globalThis.Player)
+# PLAYER = globalThis.Player()
+# PLAYER.parent=dungeon
+
 
 intro_story = `
 Legend says this was the home of a powerful Alchemist.
@@ -56,8 +60,6 @@ intro.on_enter = def():
 intro.on_exit = def():
     # narrator.end()
     enter_dungeon_button.enabled = False
-
-
 
 
 cheats = Entity(visible_self=False)
