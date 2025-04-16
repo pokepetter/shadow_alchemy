@@ -6,6 +6,7 @@ dungeon.on_enter = def():
     camera.fov = 12
 LEVEL_SIZE = [16,16]
 TILES = Array2D(LEVEL_SIZE[0], LEVEL_SIZE[1])
+CURRENT_LEVEL = -1
 h=0
 s=0
 v=.15
@@ -26,6 +27,7 @@ def goto_level(level_index):
     # level_grid = []
     TILES = Array2D(LEVEL_SIZE[0], LEVEL_SIZE[1])
     print('----- width', TILES.width)
+    CURRENT_LEVEL = level_index
 
     for y, line in lines:
         for x, char in line.split(''):
@@ -61,7 +63,13 @@ def goto_level(level_index):
                 tile.walkable = False
 
     PLAYER.goto_tile(TILES.get(PLAYER.x, PLAYER.y))
+    if PLAYER.died_on_level == level_index:
+        tile = TILES.get(PLAYER.death_coordinate[0], PLAYER.death_coordinate[1])
+        tile.content = Barrel(tile=tile, color=color.green)
 
+
+
+globalThis.goto_level = goto_level
 
 class Door extends Entity:
     constructor(settings):
@@ -81,11 +89,29 @@ class Barrel extends Entity:
 
     on_interact():
         if not this.looted:
-            print('loot barrel')
+            # print('loot barrel')
+            this.looted = True
             this.text = ''
+            let item = random_choice(['Nothing', 'Gold', 'Ruby of Health', 'sapphire', 'Four Clover Emerald'])
+            show_info(this, item)
         else:
             print('already looted')
             return
+
+info_box = Entity(scale=[2.5,.75], text_origin=[0,0], color=color.light_gray, alpha=.75, roundness=.035, z=-2, enabled=False, shadow=True, text_size=2,)
+# info_box.header = Text()
+def show_info(entity, text):
+    info_box.enabled = True
+    info_box.position = entity.world_position
+    info_box.y += .5
+    info_box.z=-2
+    info_box.text = text
+    info_box.scale_x = 0
+    info_box.animate('scale_x', 2.5, .1)
+    after 1:
+        info_box.text = ''
+        info_box.animate('scale_x', 0, .15)
+
 
 class Enemy extends Entity:
     constructor(settings):
@@ -107,6 +133,7 @@ class Enemy extends Entity:
         if this.hp > 0:
             PLAYER.hp = PLAYER.hp - this.attack
             this.hp -= 1
+            hit_number(this.world_position, 12)
             if this.hp <= 0:
                 this.die()
                 return
@@ -116,3 +143,17 @@ class Enemy extends Entity:
         else:
             this.die()
         
+def hit_number(position, number):
+    e = Text(parent=scene, text=number, position=position, text_color=color.white, text_size=4)
+    # e.animate('scale', 1.5, duration=.1)
+    duration = .6
+    e.animate('y', position[1].y+4, duration=duration*.5)
+    # e.animate('x', position[0]+random_choice([-1,1]), duration=duration)
+    # e.rotation = random_int(-5, 5)
+
+    after duration*.5:
+    #     e.animate('y', e.y-1, duration=duration*.5)
+        e.animate('alpha', 0, duration=duration*.5)
+    after duration:
+        destroy(e)
+    return e

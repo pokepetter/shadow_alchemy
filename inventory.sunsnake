@@ -1,0 +1,39 @@
+
+
+
+
+class Inventory extends Entity:
+    constructor(settings):
+        super({visible_self:False})
+        self.items = {'Gold':1, 'Ruby of Health':10}
+        self.panel = Entity(parent=camera.ui, scale=[.5,.7], padding=2, text_color=color.light_gray, shadow=True, roundness=.02, color=hsv(0,.1,.1), enabled=False, z=-5)
+        self.bg = Entity(parent=self.panel, scale=100, color=color.black, alpha=0)
+        # let panel = self.panel
+        # self.ui_button = Button(origin=[-.5,.5], xy=[-.5*asp_x+.05,.4], scale=.1, text='🎒', on_click=def():panel.enabled=True) 
+
+    render():
+        print('renderi nvetort')
+        self.panel.text = ''
+        for key, value in self.items:
+            if value:
+                self.panel.text += key
+            self.panel.text += '\n'
+
+
+
+    add_item(item):
+        self.items.append
+
+
+    clear():
+        self.items = []
+
+    input(key):
+        if key == 'i':
+            self.panel.enabled = not self.panel.enabled
+            if self.panel.enabled:
+                self.render()
+
+
+
+INVENTORY = Inventory()
